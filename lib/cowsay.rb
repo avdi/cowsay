@@ -4,11 +4,15 @@ module Cowsay
       @io_class = options.fetch(:io_class){IO}
     end
 
-    def say(message)
+    def say(message, options={})
       @io_class.popen("cowsay", "w+") do |process|
         process.write(message)
         process.close_write
-        process.read
+        result = process.read
+        if options[:out]
+          options[:out] << result
+        end
+        result
       end
     end
   end

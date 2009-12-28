@@ -39,5 +39,11 @@ module Cowsay
       @io_class.should_receive(:popen).with(anything, 'w+')
       @it.say("foo")
     end
+
+    it "should write to given output stream, if provided" do
+      out = StringIO.new
+      @it.say("moo", :out => out)
+      out.string.should be == "OUTPUT"
+    end
   end
 end
