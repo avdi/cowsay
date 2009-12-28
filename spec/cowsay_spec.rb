@@ -40,15 +40,24 @@ module Cowsay
       @it.say("foo")
     end
 
-    it "should write to given output stream, if provided" do
-      out = StringIO.new
-      @it.say("moo", :out => out)
-      out.string.should be == "OUTPUT"
-    end
-
     it "should pass the -e flag if 'eyes' string set" do
       @io_class.should_receive(:popen).with(/\-e 'oO\'/, anything)
       @it.say("moo", :strings => { :eyes => 'oO' })
+    end
+
+    context "given an output stream" do
+      it "should write to given output stream" do
+        out = StringIO.new
+        @it.say("moo", :out => out)
+        out.string.should be == "OUTPUT"
+      end
+
+      it "should return the filename of output file" do
+        out = StringIO.new
+        out.stub!(:path).and_return("/OUTPUT_PATH")
+        @it.say("moo", :out => out).should be == "/OUTPUT_PATH"
+      end
+      
     end
   end
 end

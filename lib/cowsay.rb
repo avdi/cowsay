@@ -1,3 +1,4 @@
+require 'active_support'
 module Cowsay
   class Cow
     def initialize(options={})
@@ -16,7 +17,7 @@ module Cowsay
         if options[:out]
           options[:out] << result
         end
-        result
+        options[:out].try(:path) || result
       end
     end
   end
