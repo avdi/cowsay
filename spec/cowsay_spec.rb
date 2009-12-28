@@ -59,5 +59,17 @@ module Cowsay
       end
       
     end
+
+    context "when cowsay command is missing" do
+      it "should just output the bare message" do
+        pending
+      end
+    end
+
+    context "when the command returns a non-zero status" do
+      it "should raise an argument error" do
+        pending
+      end
+    end
   end
 end
