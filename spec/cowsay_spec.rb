@@ -45,5 +45,10 @@ module Cowsay
       @it.say("moo", :out => out)
       out.string.should be == "OUTPUT"
     end
+
+    it "should pass the -e flag if 'eyes' string set" do
+      @io_class.should_receive(:popen).with(/\-e 'oO\'/, anything)
+      @it.say("moo", :strings => { :eyes => 'oO' })
+    end
   end
 end

@@ -5,7 +5,11 @@ module Cowsay
     end
 
     def say(message, options={})
-      @io_class.popen("cowsay", "w+") do |process|
+      command = "cowsay"
+      if options[:strings] && options[:strings][:eyes]
+        command << " -e '#{options[:strings][:eyes]}'"
+      end
+      @io_class.popen(command, "w+") do |process|
         process.write(message)
         process.close_write
         result = process.read
