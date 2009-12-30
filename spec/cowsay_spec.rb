@@ -2,11 +2,19 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 module Cowsay
   describe Cow do
+
+    def set_child_exit_status(status)
+      # $? is read-only so we can't set it manually. Instead we have to start an
+      # actual process and exit with the given status.
+      open("|-") do |pipe| exit!(status) if pipe.nil? end
+    end
+
     before :each do
       @process  = stub("process", :read => "OUTPUT").as_null_object
       @io_class = stub("IO Class")
+      @log      = stub("Log").as_null_object
       @io_class.stub!(:popen).and_yield(@process)
-      @it       = Cow.new(:io_class => @io_class)
+      @it       = Cow.new(:io_class => @io_class, :logger => @log)
     end
 
     it "should be able to say hello" do
@@ -52,23 +60,37 @@ module Cowsay
         out.string.should be == "OUTPUT"
       end
 
-      it "should return the filename of output file" do
+      it "should log the filename of output file" do
         out = StringIO.new
         out.stub!(:path).and_return("/OUTPUT_PATH")
-        @it.say("moo", :out => out).should be == "/OUTPUT_PATH"
+        @log.should_receive(:info).with(/\/OUTPUT_PATH/)
+        @it.say("moo", :out => out)
       end
       
     end
 
+    context "given a non-file output stream" do
+      it "should log the object in string form" do
+        out = StringIO.new
+        out.stub!(:inspect).and_return("<output>")
+        @log.should_receive(:info).with(/<output>/)
+        @it.say("moo", :out => out)
+      end
+    end
+
     context "when cowsay command is missing" do
       it "should just output the bare message" do
-        pending
+        @process.should_receive(:write).and_raise(Errno::EPIPE)
+        @it.say("cluck").should be == "cluck"
       end
     end
 
     context "when the command returns a non-zero status" do
-      it "should raise an argument error" do
-        pending
+      it "should raise an error" do
+        set_child_exit_status(1)
+        lambda do 
+          @it.say("moo")
+        end.should raise_error(ArgumentError)
       end
     end
   end
