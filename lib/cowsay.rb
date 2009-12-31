@@ -12,29 +12,38 @@ module Cowsay
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
       end
-      result = @io_class.popen(command, "w+") do |process|
-        result = begin
-                   process.write(message)
-                   process.close_write
-                   result = process.read
-                 rescue Errno::EPIPE
-                   message
+
+      messages = case message
+                 when Array then message
+                 when nil then []
+                 else [message]
                  end
-        if options[:out]
-          options[:out] << result
+      results = []
+      messages.each do |message|
+        @io_class.popen(command, "w+") do |process|
+          results << begin
+                       process.write(message)
+                       process.close_write
+                       result = process.read
+                     rescue Errno::EPIPE
+                       message
+                     end
         end
-        destination = case options[:out]
-                      when nil  then "return value"
-                      when File then options[:out].path
-                      else options[:out].inspect
-                      end
-        @logger.info "Wrote to #{destination}"
-        result
       end
+      output = results.join("\n")    
+      if options[:out]
+        options[:out] << output
+      end
+      destination = case options[:out]
+                    when nil  then "return value"
+                    when File then options[:out].path
+                    else options[:out].inspect
+                    end
+      @logger.info "Wrote to #{destination}"
       if $? && ![0,172].include?($?.exitstatus)
-        raise ArgumentError, $?.exitstatus.to_s
+        raise ArgumentError, "Command exited with status #{$?.exitstatus.to_s}"
       end
-      result
+      output
     end
   end
 end

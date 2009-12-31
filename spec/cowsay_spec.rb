@@ -11,6 +11,7 @@ module Cowsay
     end
 
     before :each do
+      set_child_exit_status(0)
       @process  = stub("process", :read => "OUTPUT").as_null_object
       @io_class = stub("IO Class")
       @log      = stub("Log").as_null_object
@@ -97,11 +98,15 @@ module Cowsay
 
     context "multiple messages" do
       it "should render each message in order" do
-        @io_class.should_receive(:popen).and_yield(@process).ordered
         @process.should_receive(:write).with("foo").ordered
-        @io_class.should_receive(:popen).and_yield(@process).ordered
         @process.should_receive(:write).with("bar").ordered
         @it.say(["foo", "bar"])
+      end
+    end
+
+    context "nil message" do
+      it "should return empty string" do
+        @it.say(nil).should be == ""
       end
     end
   end
