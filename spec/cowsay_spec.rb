@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require 'tempfile'
 
 module Cowsay
   describe Cow do
@@ -61,10 +62,10 @@ module Cowsay
       end
 
       it "should log the filename of output file" do
-        out = StringIO.new
-        out.stub!(:path).and_return("/OUTPUT_PATH")
-        @log.should_receive(:info).with(/\/OUTPUT_PATH/)
-        @it.say("moo", :out => out)
+        Tempfile.open('cowsay_spec') do |f|
+          @log.should_receive(:info).with(/#{f.path}/)
+          @it.say("moo", :out => f)
+        end
       end
       
     end
@@ -91,6 +92,16 @@ module Cowsay
         lambda do 
           @it.say("moo")
         end.should raise_error(ArgumentError)
+      end
+    end
+
+    context "multiple messages" do
+      it "should render each message in order" do
+        @io_class.should_receive(:popen).and_yield(@process).ordered
+        @process.should_receive(:write).with("foo").ordered
+        @io_class.should_receive(:popen).and_yield(@process).ordered
+        @process.should_receive(:write).with("bar").ordered
+        @it.say(["foo", "bar"])
       end
     end
   end

@@ -23,9 +23,11 @@ module Cowsay
         if options[:out]
           options[:out] << result
         end
-        destination = options[:out].try(:path) || 
-          options[:out].try(:inspect) ||
-          "return value"
+        destination = case options[:out]
+                      when nil  then "return value"
+                      when File then options[:out].path
+                      else options[:out].inspect
+                      end
         @logger.info "Wrote to #{destination}"
         result
       end
