@@ -1,6 +1,18 @@
 require 'active_support'
 require 'logger'
+require 'delegate'
+
 module Cowsay
+  class WithPath < SimpleDelegator
+    def path
+      case __getobj__
+      when File then super
+      when nil then "return value"
+      else inspect
+      end
+    end
+  end
+
   class Cow
     def initialize(options={})
       @io_class = options.fetch(:io_class){IO}
@@ -12,6 +24,7 @@ module Cowsay
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
       end
+      destination = WithPath.new(options[:out]).path
 
       messages = case message
                  when Array then message
@@ -34,11 +47,6 @@ module Cowsay
       if options[:out]
         options[:out] << output
       end
-      destination = case options[:out]
-                    when nil  then "return value"
-                    when File then options[:out].path
-                    else options[:out].inspect
-                    end
       @logger.info "Wrote to #{destination}"
       if $? && ![0,172].include?($?.exitstatus)
         raise ArgumentError, "Command exited with status #{$?.exitstatus.to_s}"
