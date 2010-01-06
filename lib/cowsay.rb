@@ -13,11 +13,7 @@ module Cowsay
         command << " -e '#{options[:strings][:eyes]}'"
       end
 
-      messages = case message
-                 when Array then message
-                 when nil then []
-                 else [message]
-                 end
+      messages = Array(message)
       results = []
       messages.each do |message|
         @io_class.popen(command, "w+") do |process|
