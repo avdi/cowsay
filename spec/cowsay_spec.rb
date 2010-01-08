@@ -114,7 +114,7 @@ module Cowsay
       it "should raise ArgumentError" do
         lambda do
           @it.say("whatever", :out => Object.new)
-        end.should raise_error(ArgumentError)
+        end.should raise_error
       end
     end
   end

@@ -9,7 +9,7 @@ module Cowsay
 
     def say(message, options={})
       out = options[:out]
-      raise ArgumentError unless out.nil? || out.respond_to?(:<<)
+      assert(out.nil? || out.respond_to?(:<<))
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
@@ -46,6 +46,12 @@ module Cowsay
         raise ArgumentError, "Command exited with status #{$?.exitstatus.to_s}"
       end
       output
+    end
+
+  private
+    
+    def assert(value, message="Assertion failed")
+      raise Exception, message unless value
     end
   end
 end
