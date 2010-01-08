@@ -8,6 +8,8 @@ module Cowsay
     end
 
     def say(message, options={})
+      out = options[:out]
+      raise ArgumentError unless out.nil? || out.respond_to?(:<<)
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
@@ -31,8 +33,8 @@ module Cowsay
         end
       end
       output = results.join("\n")    
-      if options[:out]
-        options[:out] << output
+      if out
+        out << output
       end
       destination = case options[:out]
                     when nil  then "return value"

@@ -109,5 +109,13 @@ module Cowsay
         @it.say(nil).should be == ""
       end
     end
+
+    context "bad :out option" do
+      it "should raise ArgumentError" do
+        lambda do
+          @it.say("whatever", :out => Object.new)
+        end.should raise_error(ArgumentError)
+      end
+    end
   end
 end
