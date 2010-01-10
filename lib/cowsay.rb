@@ -1,6 +1,16 @@
 require 'active_support'
 require 'logger'
 module Cowsay
+  class NullObject
+    def method_missing(*args, &block)
+      self
+    end
+  end
+
+  def Maybe(value)
+    value.nil? ? NullObject.new : value
+  end
+    
   class Cow
     def initialize(options={})
       @io_class = options.fetch(:io_class){IO}
