@@ -51,7 +51,7 @@ module Cowsay
   private
     
     def assert(value, message="Assertion failed")
-      raise Exception, message unless value
+      raise Exception, message, caller unless value
     end
   end
 end
