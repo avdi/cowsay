@@ -8,6 +8,7 @@ module Cowsay
     end
 
     def say(message, options={})
+      return "" if message.nil?
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
@@ -15,7 +16,6 @@ module Cowsay
 
       messages = case message
                  when Array then message
-                 when nil then []
                  else [message]
                  end
       results = []
