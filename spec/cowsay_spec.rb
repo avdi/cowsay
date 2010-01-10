@@ -112,17 +112,15 @@ module Cowsay
 
     context "given a cowfile" do
       it "should supply a -f argument on the command line" do
-        File.stub!(:exist?).and_return(true)
         @io_class.should_receive(:popen).with(/-f COWFILE/, anything)
         @it.say("moo", :cowfile => "COWFILE")
       end
     end
 
-    context "given an invalid cowfile" do
+    context "given a blank cowfile" do
       it "should raise an error" do
-        File.stub!(:exist?).and_return(false)
         lambda do
-          @it.say("moo", :cowfile => "COWFILE")
+          @it.say("moo", :cowfile => " ")
         end.should raise_error(Exception)
       end
     end

@@ -8,7 +8,7 @@ module Cowsay
     end
 
     def say(message, options={})
-      assert(options[:cowfile].nil? || File.exist?(options[:cowfile]))
+      options[:cowfile] and assert(options[:cowfile].to_s !~ /^\s*$/)
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
