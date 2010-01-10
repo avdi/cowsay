@@ -110,11 +110,20 @@ module Cowsay
       end
     end
 
-    context "bad :out option" do
-      it "should raise ArgumentError" do
+    context "given a cowfile" do
+      it "should supply a -f argument on the command line" do
+        File.stub!(:exist?).and_return(true)
+        @io_class.should_receive(:popen).with(/-f COWFILE/, anything)
+        @it.say("moo", :cowfile => "COWFILE")
+      end
+    end
+
+    context "given an invalid cowfile" do
+      it "should raise an error" do
+        File.stub!(:exist?).and_return(false)
         lambda do
-          @it.say("whatever", :out => Object.new)
-        end.should raise_error
+          @it.say("moo", :cowfile => "COWFILE")
+        end.should raise_error(Exception)
       end
     end
   end

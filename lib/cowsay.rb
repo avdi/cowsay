@@ -8,11 +8,13 @@ module Cowsay
     end
 
     def say(message, options={})
-      out = options[:out]
-      assert(out.nil? || out.respond_to?(:<<))
+      assert(options[:cowfile].nil? || File.exist?(options[:cowfile]))
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
+      end
+      if options[:cowfile]
+        command << " -f #{options[:cowfile]}"
       end
 
       messages = case message
@@ -33,8 +35,8 @@ module Cowsay
         end
       end
       output = results.join("\n")    
-      if out
-        out << output
+      if options[:out]
+        options[:out] << output
       end
       destination = case options[:out]
                     when nil  then "return value"
