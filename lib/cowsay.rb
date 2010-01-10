@@ -9,6 +9,8 @@ module Cowsay
 
     def say(message, options={})
       command = "cowsay"
+      width = options[:width] || 40
+      command << " -W #{width}"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
       end
