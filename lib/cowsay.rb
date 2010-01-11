@@ -40,10 +40,17 @@ module Cowsay
                     else options[:out].inspect
                     end
       @logger.info "Wrote to #{destination}"
-      if $? && ![0,172].include?($?.exitstatus)
-        raise ArgumentError, "Command exited with status #{$?.exitstatus.to_s}"
-      end
+      check_child_exit_status!
       output
+    end
+
+    private
+    
+    def check_child_exit_status!(status=$?)
+      status ||= OpenStruct.new(:exitstatus => 0)
+      unless [0,172].include?(status.exitstatus)
+        raise ArgumentError, "Command exited with status #{status.exitstatus}"
+      end      
     end
   end
 end
