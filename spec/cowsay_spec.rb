@@ -109,5 +109,20 @@ module Cowsay
         @it.say(nil).should be == ""
       end
     end
+
+    context "given a cowfile" do
+      it "should supply a -f argument on the command line" do
+        @io_class.should_receive(:popen).with(/-f COWFILE/, anything)
+        @it.say("moo", :cowfile => "COWFILE")
+      end
+    end
+
+    context "given a blank cowfile" do
+      it "should raise an error" do
+        lambda do
+          @it.say("moo", :cowfile => " ")
+        end.should raise_error(Exception)
+      end
+    end
   end
 end

@@ -8,9 +8,13 @@ module Cowsay
     end
 
     def say(message, options={})
+      options[:cowfile] and assert(options[:cowfile].to_s !~ /^\s*$/)
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
+      end
+      if options[:cowfile]
+        command << " -f #{options[:cowfile]}"
       end
 
       messages = Array(message)
@@ -55,6 +59,10 @@ module Cowsay
               "Command exited with status #{status.exitstatus}"
       end
       result
+    end
+
+    def assert(value, message="Assertion failed")
+      raise Exception, message, caller unless value
     end
   end
 end
