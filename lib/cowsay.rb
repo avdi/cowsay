@@ -20,15 +20,17 @@ module Cowsay
                  end
       results = []
       messages.each do |message|
-        @io_class.popen(command, "w+") do |process|
-          results << begin
-                       process.write(message)
-                       process.close_write
-                       result = process.read
-                     rescue Errno::EPIPE
-                       message
-                     end
-        end
+        check_child_exit_status {
+          @io_class.popen(command, "w+") do |process|
+            results << begin
+                         process.write(message)
+                         process.close_write
+                         result = process.read
+                       rescue Errno::EPIPE
+                         message
+                       end
+          end
+        }
       end
       output = results.join("\n")    
       if options[:out]
@@ -40,16 +42,17 @@ module Cowsay
                     else options[:out].inspect
                     end
       @logger.info "Wrote to #{destination}"
-      check_child_exit_status!
       output
     end
 
     private
     
-    def check_child_exit_status!(status=$?)
-      status ||= OpenStruct.new(:exitstatus => 0)
+    def check_child_exit_status
+      yield
+      status = $? || OpenStruct.new(:exitstatus => 0)
       unless [0,172].include?(status.exitstatus)
-        raise ArgumentError, "Command exited with status #{status.exitstatus}"
+        raise ArgumentError, 
+              "Command exited with status #{status.exitstatus}"
       end      
     end
   end
