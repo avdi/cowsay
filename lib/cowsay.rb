@@ -20,6 +20,7 @@ module Cowsay
     end
 
     def say(message, options={})
+      return "" if message.nil?
       options[:cowfile] and assert(options[:cowfile].to_s !~ /^\s*$/)
       command = "cowsay"
       if options[:strings] && options[:strings][:eyes]
@@ -31,7 +32,6 @@ module Cowsay
       destination = WithPath.new(options[:out]).path
 
       messages = Array(message)
-      results = []
       results = messages.map { |message|
         checked_popen(command, "w+", lambda{message}) do |process|
           process.write(message)
