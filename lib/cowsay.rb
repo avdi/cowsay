@@ -19,19 +19,13 @@ module Cowsay
                  else [message]
                  end
       results = []
-      messages.each do |message|
-        check_child_exit_status {
-          @io_class.popen(command, "w+") do |process|
-            results << begin
-                         process.write(message)
-                         process.close_write
-                         result = process.read
-                       rescue Errno::EPIPE
-                         message
-                       end
-          end
-        }
-      end
+      results = messages.map { |message|
+        checked_popen(command, "w+", lambda{message}) do |process|
+          process.write(message)
+          process.close_write
+          process.read
+        end
+      }
       output = results.join("\n")    
       if options[:out]
         options[:out] << output
@@ -46,14 +40,25 @@ module Cowsay
     end
 
     private
+
+    def checked_popen(command, mode, fail_action)
+      check_child_exit_status do
+        @io_class.popen(command, "w+") do |process|
+          yield(process)
+        end
+      end
+    rescue Errno::EPIPE
+      fail_action.call
+    end
     
     def check_child_exit_status
-      yield
+      result = yield
       status = $? || OpenStruct.new(:exitstatus => 0)
       unless [0,172].include?(status.exitstatus)
         raise ArgumentError, 
               "Command exited with status #{status.exitstatus}"
-      end      
+      end
+      result
     end
   end
 end
