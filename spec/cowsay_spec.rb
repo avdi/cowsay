@@ -25,7 +25,7 @@ module Cowsay
     end
 
     it "should start the cowsay process" do
-      @io_class.should_receive(:popen).with("cowsay", anything)
+      @io_class.should_receive(:popen).with(/^cowsay/, anything)
       @it.say("foo")
     end
 
@@ -122,6 +122,20 @@ module Cowsay
         lambda do
           @it.say("moo", :cowfile => " ")
         end.should raise_error(Exception)
+      end
+    end
+
+    context "with no width specified" do
+      it "should pass a width arg of 40" do
+        @io_class.should_receive(:popen).with(/-W 40/, anything)
+        @it.say("moo")
+      end
+    end
+
+    context "given an integer width" do
+      it "should pass the specified width argument" do
+        @io_class.should_receive(:popen).with(/-W 29/, anything)
+        @it.say("moo", :width => 29)
       end
     end
   end

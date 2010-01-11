@@ -23,6 +23,8 @@ module Cowsay
       return "" if message.nil?
       options[:cowfile] and assert(options[:cowfile].to_s !~ /^\s*$/)
       command = "cowsay"
+      width = options.fetch(:width) {40}
+      command << " -W #{width}"
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
       end
