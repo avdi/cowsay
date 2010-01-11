@@ -1,6 +1,18 @@
 require 'active_support'
 require 'logger'
+require 'delegate'
+
 module Cowsay
+  class WithPath < SimpleDelegator
+    def path
+      case __getobj__
+      when File then super
+      when nil then "return value"
+      else inspect
+      end
+    end
+  end
+
   class Cow
     def initialize(options={})
       @io_class = options.fetch(:io_class){IO}
@@ -16,6 +28,7 @@ module Cowsay
       if options[:cowfile]
         command << " -f #{options[:cowfile]}"
       end
+      destination = WithPath.new(options[:out]).path
 
       messages = Array(message)
       results = []
@@ -30,11 +43,6 @@ module Cowsay
       if options[:out]
         options[:out] << output
       end
-      destination = case options[:out]
-                    when nil  then "return value"
-                    when File then options[:out].path
-                    else options[:out].inspect
-                    end
       @logger.info "Wrote to #{destination}"
       output
     end
