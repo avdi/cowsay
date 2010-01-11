@@ -13,6 +13,24 @@ module Cowsay
     end
   end
 
+  class NullObject
+    def initialize
+      @origin = caller.first
+    end
+
+    def __null_origin__
+      @origin
+    end
+
+    def method_missing(*args, &block)
+      self
+    end
+  end
+
+  def Maybe(value)
+    value.nil? ? NullObject.new : value
+  end
+    
   class Cow
     def initialize(options={})
       @io_class = options.fetch(:io_class){IO}
@@ -32,8 +50,9 @@ module Cowsay
         command << " -f #{options[:cowfile]}"
       end
       destination = WithPath.new(options[:out]).path
-
+      out = options.fetch(:out) { NullObject.new }
       messages = Array(message)
+
       results = messages.map { |message|
         checked_popen(command, "w+", lambda{message}) do |process|
           process.write(message)
@@ -42,9 +61,8 @@ module Cowsay
         end
       }
       output = results.join("\n")    
-      if options[:out]
-        options[:out] << output
-      end
+      out << output
+
       @logger.info "Wrote to #{destination}"
       output
     end
