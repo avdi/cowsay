@@ -2,6 +2,14 @@ require 'active_support'
 require 'logger'
 module Cowsay
   class NullObject
+    def initialize
+      @origin = caller.first
+    end
+
+    def __null_origin__
+      @origin
+    end
+
     def method_missing(*args, &block)
       self
     end
@@ -22,6 +30,7 @@ module Cowsay
       if options[:strings] && options[:strings][:eyes]
         command << " -e '#{options[:strings][:eyes]}'"
       end
+      out = options.fetch(:out) { NullObject.new }
 
       messages = case message
                  when Array then message
@@ -41,9 +50,7 @@ module Cowsay
         end
       end
       output = results.join("\n")    
-      if options[:out]
-        options[:out] << output
-      end
+      out << output
       destination = case options[:out]
                     when nil  then "return value"
                     when File then options[:out].path
