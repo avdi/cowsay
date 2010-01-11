@@ -2,6 +2,28 @@ require 'active_support'
 require 'logger'
 require 'delegate'
 
+class NullObject
+  def initialize
+    @origin = caller.first
+  end
+
+  def __null_origin__
+    @origin
+  end
+
+  def method_missing(*args, &block)
+    self
+  end
+
+  def nil?
+    true
+  end
+end
+
+def Maybe(value)
+  value.nil? ? NullObject.new : value
+end
+    
 module Cowsay
   class WithPath < SimpleDelegator
     def path
@@ -13,24 +35,6 @@ module Cowsay
     end
   end
 
-  class NullObject
-    def initialize
-      @origin = caller.first
-    end
-
-    def __null_origin__
-      @origin
-    end
-
-    def method_missing(*args, &block)
-      self
-    end
-  end
-
-  def Maybe(value)
-    value.nil? ? NullObject.new : value
-  end
-    
   class Cow
     def initialize(options={})
       @io_class = options.fetch(:io_class){IO}
@@ -40,18 +44,17 @@ module Cowsay
     def say(message, options={})
       return "" if message.nil?
       options[:cowfile] and assert(options[:cowfile].to_s !~ /^\s*$/)
-      command = "cowsay"
-      width = options.fetch(:width) {40}
-      command << " -W #{width}"
-      if options[:strings] && options[:strings][:eyes]
-        command << " -e '#{options[:strings][:eyes]}'"
-      end
-      if options[:cowfile]
-        command << " -f #{options[:cowfile]}"
-      end
+
+      width       = options.fetch(:width) {40}
+      eyes        = Maybe(options[:strings])[:eyes]
+      cowfile     = options[:cowfile]
       destination = WithPath.new(options[:out]).path
-      out = options.fetch(:out) { NullObject.new }
-      messages = Array(message)
+      out         = options.fetch(:out) { NullObject.new }
+      messages    = Array(message)
+      command     = "cowsay"
+      command << " -W #{width}"
+      command << " -e '#{options[:strings][:eyes]}'" unless eyes.nil?
+      command << " -f #{options[:cowfile]}" unless cowfile.nil?
 
       results = messages.map { |message|
         checked_popen(command, "w+", lambda{message}) do |process|
